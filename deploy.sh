@@ -16,7 +16,7 @@ containerVersion=v2
 tailwindInfrastructure=deployment.json
 tailwindCharts=TailwindTraders-Backend/Deploy/helm
 tailwindChartValuesScript=/helm-values/generate-config.ps1
-tailwindChartValues=/values.yaml
+tailwindChartValues=values.yaml
 tailwindWebImages=TailwindTraders-Backend/Deploy/tt-images
 tailwindServiceAccount=TailwindTraders-Backend/Deploy/helm/ttsa.yaml
 
@@ -58,7 +58,7 @@ vnetID=$(az network vnet subnet show --resource-group $azureResourceGroup --vnet
 az group deployment create -g $azureResourceGroup --template-file $tailwindInfrastructure \
   --parameters servicePrincipalId=$azureClientID servicePrincipalSecret=$azureClientSecret \
   sqlServerAdministratorLogin=$sqlServerUser sqlServerAdministratorLoginPassword=$sqlServePassword \
-  aksVersion=1.15.7 pgversion=10 vnetSubnetID=$vnetID
+  aksVersion=1.16.13 pgversion=10 vnetSubnetID=$vnetID
 
 # # Application Insights (using preview extension)
 az extension add -n application-insights
@@ -78,7 +78,7 @@ printf "\n*** Installing Tiller on Kubernets cluster... ***\n"
 AKS_CLUSTER=$(az aks list --resource-group $azureResourceGroup --query [0].name -o tsv)
 az aks get-credentials --name $AKS_CLUSTER --resource-group $azureResourceGroup --admin
 kubectl apply -f https://raw.githubusercontent.com/Azure/helm-charts/master/docs/prerequisities/helm-rbac-config.yaml
-helm init --wait --service-account tiller
+#helm init --wait --service-account tiller
 
 printf "\n*** Installing virtual node on Kubernets cluster... ***\n"
 # Deploy virtual node 
@@ -118,16 +118,16 @@ INGRESS=$(az aks show -n $AKS_CLUSTER -g $azureResourceGroup --query addonProfil
 pictures=$(az storage account list -g $azureResourceGroup --query [0].primaryEndpoints.blob -o tsv)
 
 # App Insights Versions
-helm install --name my-tt-login -f $tailwindChartValues --namespace=$nameSpace --set ingress.hosts={$INGRESS} --set image.repository=$containerRegistry/login.api --set image.tag=$containerVersion --set inf.storage.profileimages=${pictures}profiles-list $tailwindCharts/login-api
-helm install --name my-tt-product -f $tailwindChartValues --namespace=$nameSpace --set ingress.hosts={$INGRESS} --set image.repository=$containerRegistry/product.api --set image.tag=$containerVersion --set inf.storage.productimages=${pictures}product-list --set inf.storage.productdetailimages=${pictures}product-detail $tailwindCharts/products-api
-helm install --name my-tt-coupon -f $tailwindChartValues --namespace=$nameSpace --set ingress.hosts={$INGRESS} --set image.repository=$containerRegistry/coupon.api --set image.tag=$containerVersion --set inf.storage.couponimage=${pictures}coupon-list $tailwindCharts/coupons-api
-helm install --name my-tt-profile -f $tailwindChartValues --namespace=$nameSpace --set ingress.hosts={$INGRESS} --set image.repository=$containerRegistry/profile.api --set image.tag=$containerVersion --set inf.storage.profileimages=${pictures}profiles-list $tailwindCharts/profiles-api
-helm install --name my-tt-popular-product -f $tailwindChartValues --namespace=$nameSpace --set ingress.hosts={$INGRESS} --set image.repository=$containerRegistry/popular-product.api --set image.tag=$containerVersion --set initImage.repository=$containerRegistry/popular-product-seed.api --set initImage.tag=latest --set inf.storage.productimages=${pictures}product-list $tailwindCharts/popular-products-api
-helm install --name my-tt-stock -f $tailwindChartValues --namespace=$nameSpace --set ingress.hosts={$INGRESS} --set image.repository=$containerRegistry/stock.api --set image.tag=$containerVersion $tailwindCharts/stock-api
-helm install --name my-tt-image-classifier -f $tailwindChartValues --namespace=$nameSpace --set ingress.hosts={$INGRESS} --set image.repository=$containerRegistry/image-classifier.api --set image.tag=$containerVersion $tailwindCharts/image-classifier-api
-helm install --name my-tt-cart -f $tailwindChartValues --namespace=$nameSpace --set ingress.hosts={$INGRESS} --set image.repository=$containerRegistry/cart.api --set image.tag=$containerVersion $tailwindCharts/cart-api
-helm install --name my-tt-mobilebff -f $tailwindChartValues --namespace=$nameSpace --set ingress.hosts={$INGRESS} --set image.repository=$containerRegistry/mobileapigw --set image.tag=$containerVersion --set probes.readiness=null $tailwindCharts/mobilebff
-helm install --name my-tt-webbff -f $tailwindChartValues --namespace=$nameSpace --set ingress.hosts={$INGRESS} --set image.repository=$containerRegistry/webapigw --set image.tag=$containerVersion $tailwindCharts/webbff
+helm install my-tt-login $tailwindCharts/login-api -f $tailwindChartValues --namespace=$nameSpace --set ingress.hosts={$INGRESS} --set image.repository=$containerRegistry/login.api --set image.tag=$containerVersion --set inf.storage.profileimages=${pictures}profiles-list 
+helm install my-tt-product $tailwindCharts/products-api -f $tailwindChartValues --namespace=$nameSpace --set ingress.hosts={$INGRESS} --set image.repository=$containerRegistry/product.api --set image.tag=$containerVersion --set inf.storage.productimages=${pictures}product-list --set inf.storage.productdetailimages=${pictures}product-detail 
+helm install my-tt-coupon $tailwindCharts/coupons-api -f $tailwindChartValues --namespace=$nameSpace --set ingress.hosts={$INGRESS} --set image.repository=$containerRegistry/coupon.api --set image.tag=$containerVersion --set inf.storage.couponimage=${pictures}coupon-list 
+helm install my-tt-profile $tailwindCharts/profiles-api -f $tailwindChartValues --namespace=$nameSpace --set ingress.hosts={$INGRESS} --set image.repository=$containerRegistry/profile.api --set image.tag=$containerVersion --set inf.storage.profileimages=${pictures}profiles-list 
+helm install my-tt-popular-product $tailwindCharts/popular-products-api -f $tailwindChartValues --namespace=$nameSpace --set ingress.hosts={$INGRESS} --set image.repository=$containerRegistry/popular-product.api --set image.tag=$containerVersion --set initImage.repository=$containerRegistry/popular-product-seed.api --set initImage.tag=latest --set inf.storage.productimages=${pictures}product-list 
+helm install my-tt-stock $tailwindCharts/stock-api -f $tailwindChartValues --namespace=$nameSpace --set ingress.hosts={$INGRESS} --set image.repository=$containerRegistry/stock.api --set image.tag=$containerVersion 
+helm install my-tt-image-classifier $tailwindCharts/image-classifier-api -f $tailwindChartValues --namespace=$nameSpace --set ingress.hosts={$INGRESS} --set image.repository=$containerRegistry/image-classifier.api --set image.tag=$containerVersion 
+helm install my-tt-cart $tailwindCharts/cart-api -f $tailwindChartValues --namespace=$nameSpace --set ingress.hosts={$INGRESS} --set image.repository=$containerRegistry/cart.api --set image.tag=$containerVersion 
+helm install my-tt-mobilebff $tailwindCharts/mobilebff -f $tailwindChartValues --namespace=$nameSpace --set ingress.hosts={$INGRESS} --set image.repository=$containerRegistry/mobileapigw --set image.tag=$containerVersion --set probes.readiness=null 
+helm install my-tt-webbff $tailwindCharts/webbff -f $tailwindChartValues --namespace=$nameSpace --set ingress.hosts={$INGRESS} --set image.repository=$containerRegistry/webapigw --set image.tag=$containerVersion 
 
 # Pulling from a stable fork of the tailwind website
 git clone https://github.com/neilpeterson/TailwindTraders-Website.git
