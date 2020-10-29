@@ -2,8 +2,8 @@
 set -e
 
 # Credentials
-azureClientID=a28ecfaa-d50b-4513-8ad9-5baa45c78183
-azureClientSecret=AcxVLKd~zolTC6Hw1P4_bmF0yxlg_SNfmc
+azureClientID=98e575f0-2a21-4f43-ae0c-1d44b50bf306
+azureClientSecret=WmHN_.n5SdAkqHr0hkPD8e5hlu2aSngpWS
 sqlServerUser=sqladmin
 sqlServePassword=Password2020!
 
