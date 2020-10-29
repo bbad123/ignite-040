@@ -8,7 +8,7 @@ sqlServerUser=sqladmin
 sqlServePassword=Password2020!
 
 # Azure and container image location
-azureResourceGroup=$RESOURCE_GROUP_NAME
+azureResourceGroup=ignite-learning-040
 containerRegistry=neilpeterson
 containerVersion=v2
 
